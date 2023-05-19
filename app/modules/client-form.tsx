@@ -6,6 +6,11 @@ import Image from "next/image";
 
 import * as Yup from "yup";
 
+var Airtable = require("airtable");
+var base = new Airtable({ apiKey: "keygSynwOX5f4lI1g" }).base(
+  "appB5b7Tjc2A6ykR8"
+);
+
 const SignupSchema = Yup.object().shape({
   firstName: Yup.string().required("Favor de poner el nombre"),
   lastName: Yup.string().required("Favor de poner el apellido"),
@@ -35,6 +40,20 @@ const handleSaveContact = ({
   link.click();
 };
 
+const sendToAirtable = (newRecord: {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email: string;
+  agent: string;
+}) => {
+  base("Table 1").create([
+    {
+      fields: newRecord,
+    },
+  ]);
+};
+
 const ClientForm = () => {
   const searchParams = useSearchParams();
   const agentName = searchParams.get("name") || "";
@@ -54,17 +73,16 @@ const ClientForm = () => {
           }}
           validationSchema={SignupSchema}
           onSubmit={async (values) => {
+            sendToAirtable({ ...values, agent: agentName });
             handleSaveContact({
               firstName: agentName,
               lastName: agentLastName,
               phone: agentPhone,
               email: agentEmail,
             });
-            await new Promise((r) => setTimeout(r, 500));
-            alert(JSON.stringify(values, null, 2));
           }}
         >
-          {({ errors, touched }) => (
+          {({ errors, touched }: { errors: any; touched: any }) => (
             <Form className="flex flex-col gap-2">
               <Image
                 alt="logo"
@@ -135,6 +153,20 @@ const ClientForm = () => {
             </Form>
           )}
         </Formik>
+        <div className="mt-8 flex flex-col justify-center items-center gap-2">
+          <a
+            className="underline text-blue-800"
+            href="https://www.solaremuebles.com/"
+          >
+            Página Web
+          </a>
+          <a
+            className="underline text-blue-800"
+            href="https://drive.google.com/file/d/1AQ7lQoZrOMp79xO72cV45PLRyvuyrnJp/view?usp=sharing"
+          >
+            Catálogo
+          </a>
+        </div>
       </div>
     </div>
   );
