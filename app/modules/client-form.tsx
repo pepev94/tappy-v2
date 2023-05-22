@@ -47,7 +47,7 @@ const sendToAirtable = (newRecord: {
   email: string;
   agent: string;
 }) => {
-  base("Table 1").create([
+  return base("Table 1").create([
     {
       fields: newRecord,
     },
@@ -73,7 +73,7 @@ const ClientForm = () => {
           }}
           validationSchema={SignupSchema}
           onSubmit={async (values) => {
-            sendToAirtable({ ...values, agent: agentName });
+            await sendToAirtable({ ...values, agent: agentName });
             handleSaveContact({
               firstName: agentName,
               lastName: agentLastName,
