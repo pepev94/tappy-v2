@@ -9,8 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@mailchimp/mailchimp_transactional": "^1.0.50",
     "@types/node": "20.1.7",
-    "@types/react": "18.2.6",
+    "@types/react": "^18.2.6",
     "@types/react-dom": "18.2.4",
     "airtable": "^0.12.1",
     "autoprefixer": "10.4.14",

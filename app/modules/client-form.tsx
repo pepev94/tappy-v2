@@ -5,6 +5,7 @@ import logo from "../../assets/logo.jpeg";
 import Image from "next/image";
 
 import * as Yup from "yup";
+import { useState } from "react";
 
 var Airtable = require("airtable");
 var base = new Airtable({ apiKey: "keygSynwOX5f4lI1g" }).base(
@@ -15,6 +16,7 @@ const SignupSchema = Yup.object().shape({
   firstName: Yup.string().required("Favor de poner el nombre"),
   lastName: Yup.string().required("Favor de poner el apellido"),
   email: Yup.string().email("Correo invalido"),
+  company: Yup.string().email("Correo invalido"),
   phone: Yup.string().required("Favor de poner su teléfono"),
 });
 
@@ -46,6 +48,7 @@ const sendToAirtable = (newRecord: {
   phone: string;
   email: string;
   agent: string;
+  company: string;
 }) => {
   return base("Table 1").create([
     {
@@ -54,12 +57,33 @@ const sendToAirtable = (newRecord: {
   ]);
 };
 
+const message = {
+  from_email: "hello@example.com",
+  subject: "Hello world",
+  text: "Welcome to Mailchimp Transactional!",
+  to: [
+    {
+      email: "vdr.pepe94@gmail.com",
+      type: "to",
+    },
+  ],
+};
+
+async function run() {
+  const response = await mailchimp.messages.send({
+    message,
+  });
+  console.log(response);
+}
+
 const ClientForm = () => {
   const searchParams = useSearchParams();
   const agentName = searchParams.get("name") || "";
   const agentLastName = searchParams.get("lastName") || "";
   const agentEmail = searchParams.get("email") || "";
   const agentPhone = searchParams.get("phone") || "";
+
+  const [showLinks, setShowLinks] = useState(false);
 
   return (
     <div className="p-8">
@@ -70,10 +94,22 @@ const ClientForm = () => {
             lastName: "",
             email: "",
             phone: "",
+            company: "",
           }}
           validationSchema={SignupSchema}
           onSubmit={async (values) => {
+            run();
+
             await sendToAirtable({ ...values, agent: agentName });
+            await mailchimp.messages.sendTemplate({
+              template_name: "email form",
+              name: "email form",
+              to: values.email,
+              template_content: [{}],
+              message: {},
+            });
+            setShowLinks(true);
+
             handleSaveContact({
               firstName: agentName,
               lastName: agentLastName,
@@ -129,6 +165,19 @@ const ClientForm = () => {
                 <div className="text-red-500">{errors.email}</div>
               ) : null}
 
+              <label htmlFor="email">Empresa</label>
+              <Field
+                className={`p-2 border-solid border-2 border${
+                  errors?.company ? "-red-500" : "-sky-100"
+                } rounded`}
+                id="company"
+                name="company"
+                placeholder="jane@acme.com"
+              />
+              {errors.email && touched.email ? (
+                <div className="text-red-500">{errors.email}</div>
+              ) : null}
+
               <label className="px-2" htmlFor="phone">
                 Teléfono *
               </label>
@@ -153,20 +202,22 @@ const ClientForm = () => {
             </Form>
           )}
         </Formik>
-        <div className="mt-8 flex flex-col justify-center items-center gap-2">
-          <a
-            className="underline text-blue-800"
-            href="https://www.solaremuebles.com/"
-          >
-            Página Web
-          </a>
-          <a
-            className="underline text-blue-800"
-            href="https://drive.google.com/file/d/1AQ7lQoZrOMp79xO72cV45PLRyvuyrnJp/view?usp=sharing"
-          >
-            Catálogo
-          </a>
-        </div>
+        {showLinks && (
+          <div className="mt-8 flex flex-col justify-center items-center gap-2">
+            <a
+              className="underline text-blue-800"
+              href="https://www.solaremuebles.com/"
+            >
+              Página Web
+            </a>
+            <a
+              className="underline text-blue-800"
+              href="https://drive.google.com/file/d/1AQ7lQoZrOMp79xO72cV45PLRyvuyrnJp/view?usp=sharing"
+            >
+              Catálogo
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
