@@ -69,13 +69,6 @@ const message = {
   ],
 };
 
-async function run() {
-  const response = await mailchimp.messages.send({
-    message,
-  });
-  console.log(response);
-}
-
 const ClientForm = () => {
   const searchParams = useSearchParams();
   const agentName = searchParams.get("name") || "";
@@ -98,18 +91,8 @@ const ClientForm = () => {
           }}
           validationSchema={SignupSchema}
           onSubmit={async (values) => {
-            run();
-
             await sendToAirtable({ ...values, agent: agentName });
-            await mailchimp.messages.sendTemplate({
-              template_name: "email form",
-              name: "email form",
-              to: values.email,
-              template_content: [{}],
-              message: {},
-            });
             setShowLinks(true);
-
             handleSaveContact({
               firstName: agentName,
               lastName: agentLastName,
