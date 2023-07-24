@@ -15,8 +15,8 @@ var base = new Airtable({ apiKey: "keygSynwOX5f4lI1g" }).base(
 const SignupSchema = Yup.object().shape({
   firstName: Yup.string().required("Favor de poner el nombre"),
   lastName: Yup.string().required("Favor de poner el apellido"),
-  email: Yup.string().email("Correo invalido"),
-  company: Yup.string().email("Correo invalido"),
+  email: Yup.string().optional(),
+  company: Yup.string().optional(),
   phone: Yup.string().required("Favor de poner su teléfono"),
 });
 
@@ -91,7 +91,10 @@ const ClientForm = () => {
           }}
           validationSchema={SignupSchema}
           onSubmit={async (values) => {
+            console.log("before");
             await sendToAirtable({ ...values, agent: agentName });
+            console.log("despues airtable");
+
             setShowLinks(true);
             handleSaveContact({
               firstName: agentName,
@@ -110,6 +113,7 @@ const ClientForm = () => {
                 height={50}
                 className="mx-auto mb-10"
               />
+
               <label htmlFor="firstName">Nombre *</label>
               <Field
                 className={`p-2 border-solid border-2 border${
